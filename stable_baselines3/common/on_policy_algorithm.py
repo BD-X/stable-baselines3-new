@@ -57,6 +57,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         n_steps: int,
         gamma: float,
         gae_lambda: float,
+        use_n_step_advantage: bool,
         ent_coef: float,
         vf_coef: float,
         max_grad_norm: float,
@@ -94,6 +95,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         self.n_steps = n_steps
         self.gamma = gamma
         self.gae_lambda = gae_lambda
+        self.use_n_step_advantage = use_n_step_advantage
         self.ent_coef = ent_coef
         self.vf_coef = vf_coef
         self.max_grad_norm = max_grad_norm
@@ -115,6 +117,7 @@ class OnPolicyAlgorithm(BaseAlgorithm):
             self.device,
             gamma=self.gamma,
             gae_lambda=self.gae_lambda,
+            use_n_step_advantage=self.use_n_step_advantage,
             n_envs=self.n_envs,
         )
         self.policy = self.policy_class(  # pytype:disable=not-instantiable
@@ -225,7 +228,6 @@ class OnPolicyAlgorithm(BaseAlgorithm):
         reset_num_timesteps: bool = True,
     ) -> "OnPolicyAlgorithm":
         iteration = 0
-
         total_timesteps, callback = self._setup_learn(
             total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps, tb_log_name
         )
@@ -255,6 +257,15 @@ class OnPolicyAlgorithm(BaseAlgorithm):
                 self.logger.dump(step=self.num_timesteps)
 
             self.train()
+        
+        if self.use_n_step_advantage:
+            self.logger.log("========================================================")
+            self.logger.log("AIPI530 HW1 Bodong Xu - using nstep returns & advantage")
+            self.logger.log("========================================================")
+        else:
+            self.logger.log("=========================================================")
+            self.logger.log("AIPI530 HW1 Bodong Xu - using vanilla returns & advantage")
+            self.logger.log("=========================================================")
 
         callback.on_training_end()
 
